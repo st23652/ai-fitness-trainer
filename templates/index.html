@@ -1,81 +1,62 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Fitness Trainer</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        // Persist dark mode toggle
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedTheme = localStorage.getItem("theme") || "light";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute("data-theme");
+            const next = current === "dark" ? "light" : "dark";
+            html.setAttribute("data-theme", next);
+            localStorage.setItem("theme", next);
+        }
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>AI Fitness Trainer</h1>
-        <form id="fitness-form">
-            <input type="number" name="weight" placeholder="Your weight (kg)" required><br>
-            <input type="number" name="age" placeholder="Your age" required><br>
-            <select name="lifestyle">
-                <option value="sedentary">Sedentary</option>
-                <option value="moderate">Moderate</option>
-                <option value="active">Active</option>
-            </select><br>
-            <p>Select your fitness goals:</p>
-            <label><input type="checkbox" name="goals" value="stretching"> Stretching</label><br>
-            <label><input type="checkbox" name="goals" value="fat burn"> Fat Burn</label><br>
-            <label><input type="checkbox" name="goals" value="muscle gain"> Muscle Gain</label><br>
-            <label><input type="checkbox" name="goals" value="cardio"> Cardio</label><br>
-            <label><input type="checkbox" name="goals" value="yoga"> Yoga/Pilates</label><br>
-            <label><input type="checkbox" name="goals" value="flexibility"> Flexibility</label><br>
-            <label><input type="checkbox" name="goals" value="home workout"> Home Workout</label><br>
-            <label><input type="checkbox" name="goals" value="gym workout"> Gym-based</label><br><br>
-            <label><input type="checkbox" name="roast"> Enable Roast Mode</label><br><br>
-            <button type="submit">Generate Plan</button>
-        </form>
-        <div id="plan-output"></div>
-        <button id="compliance-done" style="display:none">I Did It!</button>
-        <button id="compliance-skip" style="display:none">I Skipped It</button>
-    </div>
+<div class="container">
+    <button onclick="toggleTheme()">Toggle Dark/Light Mode</button>
+    <h1>AI Fitness Trainer</h1>
+    <form method="POST">
+        <label>Fitness Goal:
+            <input type="text" name="goal" required>
+        </label>
+        <label>Age:
+            <input type="number" name="age" required>
+        </label>
+        <label>Weight (kg):
+            <input type="number" name="weight" required>
+        </label>
+        <label>Workout Location:
+            <select name="location">
+                <option value="home">Home</option>
+                <option value="gym">Gym</option>
+            </select>
+        </label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="focus" value="Cardio">Cardio</label>
+            <label><input type="checkbox" name="focus" value="Strength">Strength</label>
+            <label><input type="checkbox" name="focus" value="Flexibility">Flexibility</label>
+            <label><input type="checkbox" name="focus" value="Fat Burn">Fat Burn</label>
+            <label><input type="checkbox" name="focus" value="Endurance">Endurance</label>
+        </div>
+        <button type="submit">Generate Plan</button>
+    </form>
 
-    <script>
-        const form = document.getElementById("fitness-form");
-        const planBox = document.getElementById("plan-output");
-        const doneBtn = document.getElementById("compliance-done");
-        const skipBtn = document.getElementById("compliance-skip");
-
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            const goals = [...form.querySelectorAll('input[name="goals"]:checked')].map(i => i.value);
-            const roast = form.querySelector('input[name="roast"]').checked;
-
-            const res = await fetch('/generate_plan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    weight: formData.get("weight"),
-                    age: formData.get("age"),
-                    lifestyle: formData.get("lifestyle"),
-                    goals: goals,
-                    roast: roast
-                })
-            });
-            const data = await res.json();
-            planBox.innerHTML = `<pre>${data.plan}</pre>`;
-            doneBtn.style.display = "inline";
-            skipBtn.style.display = "inline";
-        };
-
-        const sendCompliance = async (did_do) => {
-            const roast = form.querySelector('input[name="roast"]').checked;
-            const res = await fetch('/compliance', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ did_do, roast })
-            });
-            const data = await res.json();
-            alert(data.msg);
-        };
-
-        doneBtn.onclick = () => sendCompliance(true);
-        skipBtn.onclick = () => sendCompliance(false);
-    </script>
+    {% if plan %}
+        <div class="plan-section">
+            <h2>Your AI-Generated Plan:</h2>
+            <pre>{{ plan }}</pre>
+        </div>
+    {% endif %}
+</div>
 </body>
 </html>
