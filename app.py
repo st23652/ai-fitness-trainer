@@ -7,7 +7,7 @@ EXERCISES = {
     "easy": ["20-min walk", "10 pushups", "15 squats"],
     "medium": ["30-min jog", "20 pushups", "30 squats", "15 burpees"],
     "hard": ["45-min run", "40 pushups", "50 squats", "30 burpees", "plank 2 min"]
-}
+} 
 
 ROASTS = [
     "You skipped it? Even my grandma does better.",

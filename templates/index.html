@@ -49,7 +49,7 @@
             planBox.innerHTML = `<h3>Your 3-Day Plan:</h3><ul>${data.plan.map(e => `<li>${e}</li>`).join("")}</ul>`;
             doneBtn.style.display = "inline-block";
         };
-
+ 
         doneBtn.onclick = async () => {
             const didIt = confirm("Did you do it?");
             const response = await fetch("/compliance", {
