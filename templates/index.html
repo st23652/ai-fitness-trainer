@@ -1,68 +1,81 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>AI Fitness Trainer</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>AI Fitness Trainer 💪</h1>
-    <form id="fitness-form">
-        <label>Weight (kg):</label>
-        <input type="number" name="weight" required><br>
-        <label>Age:</label>
-        <input type="number" name="age" required><br>
-        <label>Lifestyle:</label>
-        <select name="lifestyle">
-            <option value="sedentary">Sedentary</option>
-            <option value="moderate">Moderate</option>
-            <option value="active">Active</option>
-        </select><br>
-        <label><input type="checkbox" name="roast"> Enable Roast Mode 🔥</label><br>
-        <button type="submit">Get Plan</button>
-    </form>
-
-    <div id="plan-box"></div>
-    <button id="done-btn" style="display:none;">Did you do it?</button>
+    <div class="container">
+        <h1>AI Fitness Trainer</h1>
+        <form id="fitness-form">
+            <input type="number" name="weight" placeholder="Your weight (kg)" required><br>
+            <input type="number" name="age" placeholder="Your age" required><br>
+            <select name="lifestyle">
+                <option value="sedentary">Sedentary</option>
+                <option value="moderate">Moderate</option>
+                <option value="active">Active</option>
+            </select><br>
+            <p>Select your fitness goals:</p>
+            <label><input type="checkbox" name="goals" value="stretching"> Stretching</label><br>
+            <label><input type="checkbox" name="goals" value="fat burn"> Fat Burn</label><br>
+            <label><input type="checkbox" name="goals" value="muscle gain"> Muscle Gain</label><br>
+            <label><input type="checkbox" name="goals" value="cardio"> Cardio</label><br>
+            <label><input type="checkbox" name="goals" value="yoga"> Yoga/Pilates</label><br>
+            <label><input type="checkbox" name="goals" value="flexibility"> Flexibility</label><br>
+            <label><input type="checkbox" name="goals" value="home workout"> Home Workout</label><br>
+            <label><input type="checkbox" name="goals" value="gym workout"> Gym-based</label><br><br>
+            <label><input type="checkbox" name="roast"> Enable Roast Mode</label><br><br>
+            <button type="submit">Generate Plan</button>
+        </form>
+        <div id="plan-output"></div>
+        <button id="compliance-done" style="display:none">I Did It!</button>
+        <button id="compliance-skip" style="display:none">I Skipped It</button>
+    </div>
 
     <script>
-        const form = document.getElementById('fitness-form');
-        const planBox = document.getElementById('plan-box');
-        const doneBtn = document.getElementById('done-btn');
-        let roast = false;
+        const form = document.getElementById("fitness-form");
+        const planBox = document.getElementById("plan-output");
+        const doneBtn = document.getElementById("compliance-done");
+        const skipBtn = document.getElementById("compliance-skip");
 
         form.onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData(form);
-            roast = formData.get("roast") === "on";
+            const goals = [...form.querySelectorAll('input[name="goals"]:checked')].map(i => i.value);
+            const roast = form.querySelector('input[name="roast"]').checked;
 
-            const response = await fetch("/generate_plan", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
+            const res = await fetch('/generate_plan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     weight: formData.get("weight"),
                     age: formData.get("age"),
                     lifestyle: formData.get("lifestyle"),
+                    goals: goals,
                     roast: roast
                 })
             });
-            const data = await response.json();
-            planBox.innerHTML = `<h3>Your 3-Day Plan:</h3><ul>${data.plan.map(e => `<li>${e}</li>`).join("")}</ul>`;
-            doneBtn.style.display = "inline-block";
+            const data = await res.json();
+            planBox.innerHTML = `<pre>${data.plan}</pre>`;
+            doneBtn.style.display = "inline";
+            skipBtn.style.display = "inline";
         };
- 
-        doneBtn.onclick = async () => {
-            const didIt = confirm("Did you do it?");
-            const response = await fetch("/compliance", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    did_do: didIt,
-                    roast: roast
-                })
+
+        const sendCompliance = async (did_do) => {
+            const roast = form.querySelector('input[name="roast"]').checked;
+            const res = await fetch('/compliance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ did_do, roast })
             });
-            const data = await response.json();
+            const data = await res.json();
             alert(data.msg);
         };
+
+        doneBtn.onclick = () => sendCompliance(true);
+        skipBtn.onclick = () => sendCompliance(false);
     </script>
 </body>
 </html>
