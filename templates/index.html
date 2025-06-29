@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Fitness Trainer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>AI Fitness Trainer 💪</h1>
+    <form id="fitness-form">
+        <label>Weight (kg):</label>
+        <input type="number" name="weight" required><br>
+        <label>Age:</label>
+        <input type="number" name="age" required><br>
+        <label>Lifestyle:</label>
+        <select name="lifestyle">
+            <option value="sedentary">Sedentary</option>
+            <option value="moderate">Moderate</option>
+            <option value="active">Active</option>
+        </select><br>
+        <label><input type="checkbox" name="roast"> Enable Roast Mode 🔥</label><br>
+        <button type="submit">Get Plan</button>
+    </form>
+
+    <div id="plan-box"></div>
+    <button id="done-btn" style="display:none;">Did you do it?</button>
+
+    <script>
+        const form = document.getElementById('fitness-form');
+        const planBox = document.getElementById('plan-box');
+        const doneBtn = document.getElementById('done-btn');
+        let roast = false;
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            roast = formData.get("roast") === "on";
+
+            const response = await fetch("/generate_plan", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    weight: formData.get("weight"),
+                    age: formData.get("age"),
+                    lifestyle: formData.get("lifestyle"),
+                    roast: roast
+                })
+            });
+            const data = await response.json();
+            planBox.innerHTML = `<h3>Your 3-Day Plan:</h3><ul>${data.plan.map(e => `<li>${e}</li>`).join("")}</ul>`;
+            doneBtn.style.display = "inline-block";
+        };
+
+        doneBtn.onclick = async () => {
+            const didIt = confirm("Did you do it?");
+            const response = await fetch("/compliance", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    did_do: didIt,
+                    roast: roast
+                })
+            });
+            const data = await response.json();
+            alert(data.msg);
+        };
+    </script>
+</body>
+</html>
