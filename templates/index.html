@@ -5,58 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Fitness Trainer</title>
     <link rel="stylesheet" href="/static/style.css">
-    <script>
-        // Persist dark mode toggle
-        document.addEventListener("DOMContentLoaded", () => {
-            const savedTheme = localStorage.getItem("theme") || "light";
-            document.documentElement.setAttribute("data-theme", savedTheme);
-        });
-
-        function toggleTheme() {
-            const html = document.documentElement;
-            const current = html.getAttribute("data-theme");
-            const next = current === "dark" ? "light" : "dark";
-            html.setAttribute("data-theme", next);
-            localStorage.setItem("theme", next);
-        }
-    </script>
 </head>
 <body>
-<div class="container">
-    <button onclick="toggleTheme()">Toggle Dark/Light Mode</button>
-    <h1>AI Fitness Trainer</h1>
-    <form method="POST">
-        <label>Fitness Goal:
-            <input type="text" name="goal" required>
-        </label>
-        <label>Age:
-            <input type="number" name="age" required>
-        </label>
-        <label>Weight (kg):
-            <input type="number" name="weight" required>
-        </label>
-        <label>Workout Location:
-            <select name="location">
-                <option value="home">Home</option>
-                <option value="gym">Gym</option>
-            </select>
-        </label>
-        <div class="checkbox-group">
-            <label><input type="checkbox" name="focus" value="Cardio">Cardio</label>
-            <label><input type="checkbox" name="focus" value="Strength">Strength</label>
-            <label><input type="checkbox" name="focus" value="Flexibility">Flexibility</label>
-            <label><input type="checkbox" name="focus" value="Fat Burn">Fat Burn</label>
-            <label><input type="checkbox" name="focus" value="Endurance">Endurance</label>
-        </div>
-        <button type="submit">Generate Plan</button>
-    </form>
+    <div class="container">
+        <button id="themeToggle">Toggle Dark/Light Mode</button>
+        <h1>AI Fitness Trainer</h1>
+        <form method="POST">
+            <label>Fitness Goal:
+                <input type="text" name="goal" required>
+            </label>
+            <label>Age:
+                <input type="number" name="age" required>
+            </label>
+            <label>Weight (kg):
+                <input type="number" name="weight" required>
+            </label>
+            <label>Workout Location:
+                <select name="location">
+                    <option value="home">Home</option>
+                    <option value="gym">Gym</option>
+                </select>
+            </label>
+            <fieldset class="checkbox-group">
+                <legend>Focus Areas:</legend>
+                <label><input type="checkbox" name="focus" value="Cardio"> Cardio</label>
+                <label><input type="checkbox" name="focus" value="Strength"> Strength</label>
+                <label><input type="checkbox" name="focus" value="Flexibility"> Flexibility</label>
+                <label><input type="checkbox" name="focus" value="Fat Burn"> Fat Burn</label>
+                <label><input type="checkbox" name="focus" value="Endurance"> Endurance</label>
+            </fieldset>
+            <button type="submit">Generate Plan</button>
+        </form>
 
-    {% if plan %}
+        {% if plan %}
         <div class="plan-section">
             <h2>Your AI-Generated Plan:</h2>
-            <pre>{{ plan }}</pre>
+            <pre class="plan-content">{{ plan }}</pre>
         </div>
-    {% endif %}
-</div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Apply saved theme on page load
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+
+        // Toggle theme and update localStorage
+        document.getElementById("themeToggle").addEventListener("click", () => {
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme);
+        });
+    </script>
 </body>
 </html>
