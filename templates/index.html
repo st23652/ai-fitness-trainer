@@ -1,19 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Fitness Trainer</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <button id="themeToggle">Toggle Dark/Light Mode</button>
         <h1>AI Fitness Trainer</h1>
+        <button id="darkModeToggle">Toggle Dark Mode</button>
+
         <form method="POST">
-            <label>Fitness Goal:
-                <input type="text" name="goal" required>
-            </label>
             <label>Age:
                 <input type="number" name="age" required>
             </label>
@@ -22,40 +19,37 @@
             </label>
             <label>Workout Location:
                 <select name="location">
-                    <option value="home">Home</option>
-                    <option value="gym">Gym</option>
+                    <option value="Home">Home</option>
+                    <option value="Gym">Gym</option>
                 </select>
             </label>
-            <fieldset class="checkbox-group">
-                <legend>Focus Areas:</legend>
-                <label><input type="checkbox" name="focus" value="Cardio"> Cardio</label>
-                <label><input type="checkbox" name="focus" value="Strength"> Strength</label>
-                <label><input type="checkbox" name="focus" value="Flexibility"> Flexibility</label>
-                <label><input type="checkbox" name="focus" value="Fat Burn"> Fat Burn</label>
-                <label><input type="checkbox" name="focus" value="Endurance"> Endurance</label>
-            </fieldset>
+
+            <label>Workout Goals:</label>
+            <div class="checkboxes">
+                <label><input type="checkbox" name="goals" value="Fat Burn"> Fat Burn</label>
+                <label><input type="checkbox" name="goals" value="Stretching"> Stretching</label>
+                <label><input type="checkbox" name="goals" value="Cardio"> Cardio</label>
+                <label><input type="checkbox" name="goals" value="Strength"> Strength</label>
+            </div>
+
+            <label>Focus Areas:
+                <input type="text" name="focus" placeholder="e.g., Abs, Legs, Chest">
+            </label>
+
             <button type="submit">Generate Plan</button>
         </form>
 
-        {% if plan %}
+        {% if workout_plan %}
         <div class="plan-section">
-            <h2>Your AI-Generated Plan:</h2>
-            <pre class="plan-content">{{ plan }}</pre>
+            <h2>Your 1-Day Workout Plan:</h2>
+            <pre>{{ workout_plan }}</pre>
         </div>
         {% endif %}
     </div>
 
     <script>
-        // Apply saved theme on page load
-        const savedTheme = localStorage.getItem("theme") || "light";
-        document.documentElement.setAttribute("data-theme", savedTheme);
-
-        // Toggle theme and update localStorage
-        document.getElementById("themeToggle").addEventListener("click", () => {
-            const currentTheme = document.documentElement.getAttribute("data-theme");
-            const newTheme = currentTheme === "dark" ? "light" : "dark";
-            document.documentElement.setAttribute("data-theme", newTheme);
-            localStorage.setItem("theme", newTheme);
+        document.getElementById("darkModeToggle").addEventListener("click", function () {
+            document.body.classList.toggle("dark-mode");
         });
     </script>
 </body>
