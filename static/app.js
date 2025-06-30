@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             weight: formData.get('weight'),
             location: formData.get('location'),
             duration: formData.get('duration'),
+            workout_hours: formData.get('workout_hours'), // Added workout hours
             goals: formData.getAll('goals'),
             focus: formData.get('focus'),
         };

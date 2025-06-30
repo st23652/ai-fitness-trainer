@@ -27,7 +27,7 @@ def generate_workout():
             return jsonify({"error": "Invalid JSON provided."}), 400
 
         # --- Data Validation ---
-        required_fields = ["age", "weight", "location", "duration", "goals"]
+        required_fields = ["age", "weight", "location", "duration", "goals", "workout_hours"]
         if not all(field in data and data[field] for field in required_fields):
             return jsonify({"error": "Missing required fields. Please fill out the entire form."}), 400
 
@@ -41,6 +41,7 @@ def generate_workout():
         - **Weight:** {data.get("weight")} kg
         - **Workout Location:** {data.get("location")}
         - **Plan Duration:** {data.get("duration")}
+        - **Desired Workout Time Per Day:** {data.get("workout_hours")} hours
         - **Primary Goals:** {', '.join(data.get("goals"))}
         - **Specific Focus Areas:** {data.get("focus") or 'Overall body fitness'}
 
@@ -49,9 +50,9 @@ def generate_workout():
         2.  **Introduction:** A brief, encouraging intro.
         3.  **Structure:** For multi-day plans, structure the response clearly by day (e.g., "Day 1: Upper Body", "Day 2: Lower Body").
         4.  **Daily Components:** Each day must include:
-            - **Warm-up (5-10 mins):** List 3-4 dynamic stretches with durations (e.g., "Jumping Jacks - 60 seconds").
-            - **Main Workout:** Provide a table or a clear list of exercises. For each exercise, specify **Sets**, **Reps** (or **Duration** for cardio/isometric), and **Rest** periods.
-            - **Cool-down (5-10 mins):** List 3-4 static stretches with hold times (e.g., "Hamstring Stretch - 30 seconds per leg").
+            - **Warm-up (5-10 mins):** List 3-4 dynamic stretches.
+            - **Main Workout:** Provide a list of exercises. For each exercise, specify **Sets**, **Reps** (or **Duration**), and **Rest** periods. **Crucially, the number and length of exercises must be adjusted so the entire session (warm-up, workout, cool-down) fits within the user's "Desired Workout Time Per Day".**
+            - **Cool-down (5-10 mins):** List 3-4 static stretches.
         5.  **Important Note:** Add a concluding note about listening to one's body and the importance of proper form.
 
         Generate the response in clean HTML format. Use <h3> for main sections, <h4> for subsections, and <ul> or <ol> for lists. This will be rendered directly in the browser.
@@ -90,4 +91,3 @@ if __name__ == "__main__":
     # This is for local development only.
     # Production servers will use a WSGI server like Gunicorn.
     app.run(debug=True, port=5001)
-
