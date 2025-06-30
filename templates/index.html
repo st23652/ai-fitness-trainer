@@ -2,55 +2,126 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI Fitness Trainer</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitForge AI - Your Personal Workout Planner</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <!-- Libraries for Functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>AI Fitness Trainer</h1>
-        <button id="darkModeToggle">Toggle Dark Mode</button>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <i data-lucide="dumbbell"></i>
+                <h1>FitForge AI</h1>
+            </div>
+            <button id="darkModeToggle" class="icon-btn">
+                <i data-lucide="sun"></i>
+                <i data-lucide="moon" style="display:none;"></i>
+            </button>
+        </header>
 
-        <form method="POST">
-            <label>Age:
-                <input type="number" name="age" required>
-            </label>
-            <label>Weight (kg):
-                <input type="number" name="weight" required>
-            </label>
-            <label>Workout Location:
-                <select name="location">
-                    <option value="Home">Home</option>
-                    <option value="Gym">Gym</option>
-                </select>
-            </label>
+        <main class="main-content">
+            <div class="form-container card">
+                <h2>Create Your Plan</h2>
+                <p>Fill in your details to generate a personalized workout plan with AI.</p>
+                <form id="workoutForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="age">Age</label>
+                            <input type="number" id="age" name="age" placeholder="e.g., 25" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="weight">Weight (kg)</label>
+                            <input type="number" id="weight" name="weight" placeholder="e.g., 70" required>
+                        </div>
+                    </div>
 
-            <label>Workout Goals:</label>
-            <div class="checkboxes">
-                <label><input type="checkbox" name="goals" value="Fat Burn"> Fat Burn</label>
-                <label><input type="checkbox" name="goals" value="Stretching"> Stretching</label>
-                <label><input type="checkbox" name="goals" value="Cardio"> Cardio</label>
-                <label><input type="checkbox" name="goals" value="Strength"> Strength</label>
+                    <div class="form-group">
+                        <label for="location">Workout Location</label>
+                        <select id="location" name="location">
+                            <option value="Gym">Gym</option>
+                            <option value="Home">Home</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">Plan Duration</label>
+                        <select id="duration" name="duration">
+                            <option value="1-day">1 Day</option>
+                            <option value="3-day">3 Days</option>
+                            <option value="7-day">1 Week</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Primary Goals</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="goals" value="Fat Burn"> Fat Burn</label>
+                            <label><input type="checkbox" name="goals" value="Strength"> Strength</label>
+                            <label><input type="checkbox" name="goals" value="Cardio"> Cardio</label>
+                            <label><input type="checkbox" name="goals" value="Stretching"> Stretching</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="focus">Focus Areas (optional)</label>
+                        <input type="text" id="focus" name="focus" placeholder="e.g., Abs, Legs, Chest">
+                    </div>
+
+                    <button type="submit" id="generateBtn" class="primary-btn">
+                        <i data-lucide="sparkles"></i>
+                        <span>Generate Plan</span>
+                    </button>
+                </form>
             </div>
 
-            <label>Focus Areas:
-                <input type="text" name="focus" placeholder="e.g., Abs, Legs, Chest">
-            </label>
+            <div class="plan-container">
+                <div id="initial-message" class="card">
+                    <i data-lucide="clipboard-list"></i>
+                    <h3>Your workout plan will appear here.</h3>
+                    <p>Fill out the form and let our AI create a plan tailored just for you!</p>
+                </div>
+                
+                <div id="spinner" class="card" style="display: none;">
+                    <div class="spinner-icon"></div>
+                    <p>Forging your plan... this may take a moment.</p>
+                </div>
 
-            <button type="submit">Generate Plan</button>
-        </form>
+                <div id="planSection" class="card" style="display: none;">
+                    <div class="plan-header">
+                        <h3>Your Personalized Plan</h3>
+                        <div class="action-buttons">
+                            <button id="copyBtn" class="icon-btn"><i data-lucide="copy"></i></button>
+                            <button id="downloadBtn" class="icon-btn"><i data-lucide="download"></i></button>
+                        </div>
+                    </div>
+                    <div id="plan-content"></div>
+                </div>
 
-        {% if workout_plan %}
-        <div class="plan-section">
-            <h2>Your 1-Day Workout Plan:</h2>
-            <pre>{{ workout_plan }}</pre>
-        </div>
-        {% endif %}
+                 <div id="error-message" class="card" style="display: none;">
+                    <i data-lucide="alert-triangle"></i>
+                    <h3>An Error Occurred</h3>
+                    <p id="error-text"></p>
+                </div>
+            </div>
+        </main>
     </div>
-
-    <script>
-        document.getElementById("darkModeToggle").addEventListener("click", function () {
-            document.body.classList.toggle("dark-mode");
-        });
-    </script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
