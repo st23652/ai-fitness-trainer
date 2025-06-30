@@ -81,11 +81,6 @@ def serve_manifest():
 def serve_sw():
     return send_from_directory(app.root_path, 'sw.js')
 
-@app.route('/static/icons/<path:filename>')
-def serve_icons(filename):
-    return send_from_directory(os.path.join(app.root_path, 'static', 'icons'), filename)
-
-
 # --- For Production Deployment (e.g., on Gunicorn) ---
 if __name__ == "__main__":
     # This is for local development only.
