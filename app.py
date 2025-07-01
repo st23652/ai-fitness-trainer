@@ -6,7 +6,6 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 
 # --- Configuration and Security ---
 # It's highly recommended to set this as an environment variable
-# For local development, you can create a .env file and use a library like python-dotenv
 openai.api_key = os.getenv("OPENAI_API_KEY", "your-fallback-api-key-here")
 
 if openai.api_key == "your-fallback-api-key-here":
@@ -34,7 +33,7 @@ def generate_workout():
         # --- Prompt Engineering ---
         prompt = f"""
         Act as an expert fitness coach. Create a personalized workout plan based on the user's details.
-        The plan should be well-structured, safe, and motivating.
+        The plan must be well-structured, safe, and motivating.
 
         **User Profile:**
         - **Age:** {data.get("age")}
@@ -46,16 +45,21 @@ def generate_workout():
         - **Specific Focus Areas:** {data.get("focus") or 'Overall body fitness'}
 
         **Response Requirements:**
-        1.  **Title:** Start with a catchy title for the plan.
-        2.  **Introduction:** A brief, encouraging intro.
-        3.  **Structure:** For multi-day plans, structure the response clearly by day (e.g., "Day 1: Upper Body", "Day 2: Lower Body").
+        1.  **CRITICAL:** For every single exercise name you list, you MUST wrap it in a `<span>` tag with two specific attributes:
+            - `class="exercise-name"`
+            - `data-instruction="..."` where the `...` is a detailed, step-by-step guide on how to perform that exercise. The instructions should be concise and clear.
+            - **Example:** `<li><span class="exercise-name" data-instruction="1. Stand with feet shoulder-width apart. 2. Lower your hips as if sitting in a chair. 3. Keep your chest up and back straight. 4. Push through your heels to return to the start.">Barbell Squats</span>: 3 sets of 10-12 reps, 60-90 sec rest.</li>`
+
+        2.  **Title:** Start with a catchy title for the plan.
+        3.  **Structure:** For multi-day plans, structure the response clearly by day (e.g., "Day 1: Upper Body").
         4.  **Daily Components:** Each day must include:
             - **Warm-up (5-10 mins):** List 3-4 dynamic stretches.
-            - **Main Workout:** Provide a list of exercises. For each exercise, specify **Sets**, **Reps** (or **Duration**), and **Rest** periods. **Crucially, the number and length of exercises must be adjusted so the entire session (warm-up, workout, cool-down) fits within the user's "Desired Workout Time Per Day".**
+            - **Main Workout:** Provide a list of exercises. For each exercise, specify **Sets**, **Reps** (or **Duration**), and **Rest**. The number and length of exercises must be adjusted to fit the user's "Desired Workout Time Per Day".
             - **Cool-down (5-10 mins):** List 3-4 static stretches.
         5.  **Important Note:** Add a concluding note about listening to one's body and the importance of proper form.
 
-        Generate the response in clean HTML format. Use <h3> for main sections, <h4> for subsections, and <ul> or <ol> for lists. This will be rendered directly in the browser.
+        Generate the response in clean HTML format. Use <h3> for main sections, <h4> for subsections, and <ul> or <ol> for lists.
+        IMPORTANT: Do NOT wrap the output in markdown code fences like ```html or ```. The output should be pure HTML.
         """
 
         response = openai.ChatCompletion.create(
@@ -83,6 +87,4 @@ def serve_sw():
 
 # --- For Production Deployment (e.g., on Gunicorn) ---
 if __name__ == "__main__":
-    # This is for local development only.
-    # Production servers will use a WSGI server like Gunicorn.
     app.run(debug=True, port=5001)

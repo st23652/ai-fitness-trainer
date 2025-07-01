@@ -5,20 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitForge AI - Your Personal Workout Planner</title>
     
-    <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
-    
-    <!-- Google Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link 
-    rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    
-    <!-- Libraries for Functionality -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -60,7 +52,7 @@
                     </div>
 
                     <div class="form-grid">
-                        <div class="form-group">
+                         <div class="form-group">
                             <label for="duration">Plan Duration</label>
                             <select id="duration" name="duration">
                                 <option value="1-day">1 Day</option>
@@ -78,16 +70,16 @@
                             </select>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label>Primary Goals</label>
+                    
+                    <fieldset class="form-group">
+                        <legend>Primary Goals</legend>
                         <div class="checkbox-group">
                             <label><input type="checkbox" name="goals" value="Fat Burn"> Fat Burn</label>
                             <label><input type="checkbox" name="goals" value="Strength"> Strength</label>
                             <label><input type="checkbox" name="goals" value="Cardio"> Cardio</label>
                             <label><input type="checkbox" name="goals" value="Stretching"> Stretching</label>
                         </div>
-                    </div>
+                    </fieldset>
 
                     <div class="form-group">
                         <label for="focus">Focus Areas (optional)</label>
@@ -132,8 +124,16 @@
             </div>
         </main>
     </div>
+
+    <!-- Instruction Modal -->
+    <div id="instructionModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button id="modalCloseBtn" class="icon-btn modal-close-btn">&times;</button>
+            <h3 id="modal-title">Exercise Instructions</h3>
+            <div id="modal-instructions"></div>
+        </div>
+    </div>
     
-    <!-- Custom JS -->
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

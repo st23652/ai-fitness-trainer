@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyBtn = document.getElementById('copyBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const darkModeToggle = document.getElementById('darkModeToggle');
+    // Modal elements
+    const instructionModal = document.getElementById('instructionModal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalInstructions = document.getElementById('modal-instructions');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+
 
     // --- Dark Mode Logic ---
     const sunIcon = darkModeToggle.querySelector('[data-lucide="sun"]');
@@ -53,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
             weight: formData.get('weight'),
             location: formData.get('location'),
             duration: formData.get('duration'),
-            workout_hours: formData.get('workout_hours'), // Added workout hours
+            workout_hours: formData.get('workout_hours'),
             goals: formData.getAll('goals'),
             focus: formData.get('focus'),
         };
@@ -65,13 +71,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(data),
             });
 
+            // Robust error handling
             if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.error || `HTTP error! Status: ${response.status}`);
+                let errorMsg = `HTTP error! Status: ${response.status}`;
+                try {
+                    // Try to parse a JSON error response from the server
+                    const errData = await response.json();
+                    errorMsg = errData.error || errorMsg;
+                } catch (jsonError) {
+                    // If the response isn't JSON, use the raw text
+                    errorMsg = await response.text();
+                }
+                throw new Error(errorMsg);
             }
 
             const result = await response.json();
-            planContent.innerHTML = result.plan;
+            // Clean the response to remove potential markdown code block specifiers
+            const cleanedPlan = result.plan.replace(/```html|```/g, '').trim();
+            planContent.innerHTML = cleanedPlan;
             showState(planSection);
 
         } catch (error) {
@@ -82,6 +99,31 @@ document.addEventListener('DOMContentLoaded', () => {
             generateBtn.querySelector('span').textContent = 'Generate Plan';
         }
     });
+
+    // --- Modal Logic ---
+    planContent.addEventListener('click', (e) => {
+        if (e.target.classList.contains('exercise-name')) {
+            const exerciseName = e.target.textContent;
+            const instructions = e.target.dataset.instruction;
+            
+            modalTitle.textContent = `${exerciseName} - Instructions`;
+            modalInstructions.textContent = instructions;
+            instructionModal.style.display = 'flex';
+        }
+    });
+
+    const closeModal = () => {
+        instructionModal.style.display = 'none';
+    };
+
+    modalCloseBtn.addEventListener('click', closeModal);
+    instructionModal.addEventListener('click', (e) => {
+        // Close if the overlay is clicked, but not the content inside it
+        if (e.target === instructionModal) {
+            closeModal();
+        }
+    });
+
 
     // --- Action Button Logic ---
     copyBtn.addEventListener('click', () => {
@@ -109,17 +151,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const canvasWidth = canvas.width;
             const canvasHeight = canvas.height;
             const ratio = canvasWidth / canvasHeight;
-            const imgWidth = pdfWidth - 20; // with margin
+            const imgWidth = pdfWidth - 20;
             const imgHeight = imgWidth / ratio;
             
             let heightLeft = imgHeight;
-            let position = 10; // top margin
+            let position = 10;
             
             pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
             heightLeft -= (pdfHeight - 20);
 
             while (heightLeft > 0) {
-                position = heightLeft - imgHeight + 10; // top margin on new page
+                position = heightLeft - imgHeight + 10;
                 pdf.addPage();
                 pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
                 heightLeft -= (pdfHeight - 20);
