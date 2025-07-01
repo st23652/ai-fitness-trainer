@@ -6,10 +6,10 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 
 # --- Configuration and Security ---
 # It's highly recommended to set this as an environment variable
-openai.api_key = os.getenv("OPENAI_API_KEY", "your-fallback-api-key-here")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-if openai.api_key == "your-fallback-api-key-here":
-    print("WARNING: OpenAI API key is not set as an environment variable.")
+if not openai.api_key:
+    print("WARNING: OpenAI API key is not set as an environment variable. The application will not be able to generate plans.")
 
 # --- App Routes ---
 @app.route("/")
@@ -20,6 +20,9 @@ def index():
 @app.route("/generate", methods=["POST"])
 def generate_workout():
     """API endpoint to generate the workout plan."""
+    if not openai.api_key:
+        return jsonify({"error": "Server configuration error: OpenAI API key is not set."}), 500
+        
     try:
         data = request.get_json()
         if not data:

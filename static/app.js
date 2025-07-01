@@ -71,22 +71,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(data),
             });
 
-            // Robust error handling
+            // If the response is not OK, handle it as an error.
             if (!response.ok) {
-                let errorMsg = `HTTP error! Status: ${response.status}`;
+                // Get the error message from the response body.
+                // This works for both JSON error responses and plain text/HTML errors.
+                const errorData = await response.text();
+                let errorMsg = errorData;
                 try {
-                    // Try to parse a JSON error response from the server
-                    const errData = await response.json();
-                    errorMsg = errData.error || errorMsg;
-                } catch (jsonError) {
-                    // If the response isn't JSON, use the raw text
-                    errorMsg = await response.text();
+                    // Try to parse it as JSON to get a cleaner message if available
+                    const jsonError = JSON.parse(errorData);
+                    errorMsg = jsonError.error || errorMsg;
+                } catch (e) {
+                    // Ignore if it's not JSON, the raw text is fine.
                 }
                 throw new Error(errorMsg);
             }
 
+            // If the response is OK, parse the JSON.
             const result = await response.json();
-            // Clean the response to remove potential markdown code block specifiers
             const cleanedPlan = result.plan.replace(/```html|```/g, '').trim();
             planContent.innerHTML = cleanedPlan;
             showState(planSection);
