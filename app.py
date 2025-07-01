@@ -5,11 +5,16 @@ import os
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
 # --- Configuration and Security ---
-# It's highly recommended to set this as an environment variable
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# This will be set as an environment variable on your hosting service (Render)
+api_key = os.getenv("OPENAI_API_KEY")
 
-if not openai.api_key:
-    print("WARNING: OpenAI API key is not set as an environment variable. The application will not be able to generate plans.")
+# Instantiate the OpenAI client. It will automatically use the OPENAI_API_KEY environment variable.
+# If the key is not set, this will raise an error, which is good for debugging.
+try:
+    client = openai.OpenAI(api_key=api_key)
+except openai.OpenAIError as e:
+    print(f"ERROR: OpenAI API key is not set or is invalid. {e}")
+    client = None
 
 # --- App Routes ---
 @app.route("/")
@@ -20,8 +25,8 @@ def index():
 @app.route("/generate", methods=["POST"])
 def generate_workout():
     """API endpoint to generate the workout plan."""
-    if not openai.api_key:
-        return jsonify({"error": "Server configuration error: OpenAI API key is not set."}), 500
+    if not client:
+        return jsonify({"error": "Server configuration error: The OpenAI API key is not configured correctly."}), 500
         
     try:
         data = request.get_json()
@@ -65,18 +70,22 @@ def generate_workout():
         IMPORTANT: Do NOT wrap the output in markdown code fences like ```html or ```. The output should be pure HTML.
         """
 
-        response = openai.ChatCompletion.create(
+        # Use the modern client.chat.completions.create method
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=2048
         )
-        workout_plan = response.choices[0].message['content'].strip()
+        # Access the content with the new syntax
+        workout_plan = response.choices[0].message.content.strip()
         return jsonify({"plan": workout_plan})
 
-    except openai.error.OpenAIError as e:
+    except openai.APIError as e:
+        # Handle API-specific errors from OpenAI
         return jsonify({"error": f"OpenAI API error: {e}"}), 502
     except Exception as e:
+        # Handle other potential errors
         return jsonify({"error": f"An unexpected server error occurred: {e}"}), 500
 
 # --- PWA Routes ---
